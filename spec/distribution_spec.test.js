@@ -230,4 +230,25 @@ describe("A Distribution", () => {
 
         expect(firstSample).toEqual(secondSample);
     });
+    it("should return different sample when using no seed", () => {
+        const firstSample =   MultivariateNormal(
+            [1, 2, 0],
+            [
+                [1, 1, 1],
+                [1, 1, 1],
+                [1, 1, 1],
+            ]
+        ).sample();
+        const secondSample =   MultivariateNormal(
+            [1, 2, 0],
+            [
+                [1, 1, 1],
+                [1, 1, 1],
+                [1, 1, 1],
+            ]
+        ).sample();
+
+
+        expect(firstSample).not.toEqual(secondSample);
+    });
 });
