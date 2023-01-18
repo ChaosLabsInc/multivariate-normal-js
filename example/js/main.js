@@ -1,5 +1,5 @@
-import $ from "jquery";
-import Forms from "./forms";
+const $ = require("jquery");
+const Forms = require("./forms");
 
 $(function() {
     Forms.init();

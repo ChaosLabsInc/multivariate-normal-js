@@ -1,8 +1,8 @@
 /* globals describe, it, expect */
 
-import MultivariateNormal from "multivariate-normal";
-import _ from "lodash";
-import { cov, randomCovarianceMatrix, shouldBeVector, matricesShouldBeApproxEqual } from "./util";
+const {MultivariateNormal} = require("../src");
+const _ = require("lodash");
+const { cov, randomCovarianceMatrix, shouldBeVector, matricesShouldBeApproxEqual } = require("./util");
 
 
 

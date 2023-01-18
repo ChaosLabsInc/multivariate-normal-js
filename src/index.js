@@ -1,6 +1,6 @@
-import isArray from "lodash.isarray";
-import { validateMean, validateCovAndGetSVD } from "./validation.js";
-import Distribution from "./distribution.js";
+const isArray = require("lodash.isarray");
+const { validateMean, validateCovAndGetSVD } = require("./validation.js");
+const { Distribution } = require("./distribution.js");
 
 const MultivariateNormal = (unvalidatedMean, unvalidatedCov, seed) => {
     if (!isArray(unvalidatedMean)) {
@@ -14,4 +14,7 @@ const MultivariateNormal = (unvalidatedMean, unvalidatedCov, seed) => {
     return Distribution(n, mean, cov, svd, seed);
 };
 
-export default MultivariateNormal;
+Object.defineProperty(exports, "__esModule", {
+    value: true,
+});
+module.exports = {MultivariateNormal};

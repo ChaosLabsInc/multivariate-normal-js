@@ -25,7 +25,7 @@ pre-built files from the `dist` folder.
 Then you can do:
 
 ```javascript
-    import MultivariateNormal from "multivariate-normal";
+    const {MultivariateNormal} = require("multivariate-normal");
     // or without ES6 import: var MultivariateNormal = require("multivariate-normal").default;
     // or without a CommonJS runtime: <script src="path/to/multivariate-normal.min.js"></script>, and then use the global window.MultivariateNormal.default
 

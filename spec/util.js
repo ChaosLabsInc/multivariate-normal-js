@@ -1,8 +1,8 @@
-import _ from "lodash";
-import Numeric from "numeric";
+const _ = require("lodash");
+const Numeric = require("numeric");
 
 // given an aribrarily nested array, rounds each value to 2 decimal places
-export const roundMatrix = (matrix, precision=2) => {
+const roundMatrix = (matrix, precision=2) => {
     if (_.isArray(matrix)) {
         return matrix.map(el => roundMatrix(el, precision));
     }
@@ -23,7 +23,7 @@ export const roundMatrix = (matrix, precision=2) => {
 
 // Algorithm for estimating the covariance matrix from a matrix of data.
 // Based on http://stats.seandolinar.com/making-a-covariance-matrix-in-r/
-export const cov = (dataMatrix) => {
+const cov = (dataMatrix) => {
     const rows = dataMatrix.length;
     const cols = dataMatrix[0].length;
 
@@ -47,7 +47,7 @@ export const cov = (dataMatrix) => {
 };
 
 // Generate a random, valid covariance matrix
-export const randomCovarianceMatrix = (size) => {
+const randomCovarianceMatrix = (size) => {
     // we randomly generate symmetrical matrices with 1s on the diagonal
     // until we find one that's positive semidefinite
 
@@ -81,7 +81,7 @@ export const randomCovarianceMatrix = (size) => {
 
 // validates that a given array is an array of numbers with the specified
 // length
-export const shouldBeVector = (maybeVector, length) => {
+const shouldBeVector = (maybeVector, length) => {
     if (!_.isArray(maybeVector)) {
         throw new Error("vector must be an array");
     }
@@ -97,7 +97,7 @@ export const shouldBeVector = (maybeVector, length) => {
 
 // validates that two matrices are pairwise equal to withing a given delta
 // (default 0.05)
-export const matricesShouldBeApproxEqual = (a, b, maxDiff=0.05) => {
+const matricesShouldBeApproxEqual = (a, b, maxDiff=0.05) => {
     a.forEach((aRow, rowIdx) => {
         aRow.forEach((aVal, colIdx) => {
             const bVal = b[rowIdx][colIdx];
@@ -109,3 +109,6 @@ export const matricesShouldBeApproxEqual = (a, b, maxDiff=0.05) => {
     });
 };
 
+module.exports = {roundMatrix,  cov,
+    randomCovarianceMatrix, shouldBeVector,matricesShouldBeApproxEqual,
+};

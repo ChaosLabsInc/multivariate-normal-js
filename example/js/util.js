@@ -1,4 +1,4 @@
-import $ from "jquery";
+const $ = require("jquery");
 
 // serializes a form into an object and coerces values into numbers
 export const serializeForm = function(selector) {
