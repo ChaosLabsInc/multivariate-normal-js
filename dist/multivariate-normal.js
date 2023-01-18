@@ -1,20 +1,12 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.MultivariateNormal = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 "use strict";
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports["default"] = void 0;
-
-var _validation = require("./validation.js");
-
-var _gaussian = _interopRequireDefault(require("gaussian"));
-
-var _numeric = _interopRequireDefault(require("numeric"));
-
-var _seedrandom = _interopRequireDefault(require("seedrandom"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+var _require = require("./validation.js"),
+  validateMean = _require.validateMean,
+  validateCovAndGetSVD = _require.validateCovAndGetSVD;
+var gaussian = require("gaussian");
+var Numeric = require("numeric");
+var seedrandom = require("seedrandom");
 
 // Low-level distribution constructor. NOT a public API.
 //
@@ -26,23 +18,20 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 // preconditions:
 //   - mean and cov have been validated
 //   - mean and cov are frozen
-var standardNormalDist = (0, _gaussian["default"])(0, 1);
 
+var standardNormalDist = gaussian(0, 1);
 var standardNormalVector = function standardNormalVector(length, seedRandom) {
   var ary = [];
-
   for (var i = 0; i < length; i++) {
     ary.push(standardNormalDist.ppf(seedRandom()));
   }
-
   return ary;
 };
-
 var Distribution = function Distribution(n, mean, cov, _ref, seed) {
   var u = _ref.u,
-      s = _ref.s,
-      v = _ref.v;
-  var seedRandom = new _seedrandom["default"](seed);
+    s = _ref.s,
+    v = _ref.v;
+  var seedRandom = new seedrandom(seed);
   return {
     sample: function sample() {
       // From numpy (paraphrased):
@@ -51,6 +40,7 @@ var Distribution = function Distribution(n, mean, cov, _ref, seed) {
       //   x += mean
       //
       // https://github.com/numpy/numpy/blob/a835270d718d299535606d7104fd86d9b2aa68a6/numpy/random/mtrand/mtrand.pyx
+
       // np.sqrt(s)[:, None] * v
       //
       // This is an elegant way in numpy to multiply each column of
@@ -61,15 +51,17 @@ var Distribution = function Distribution(n, mean, cov, _ref, seed) {
         return row.map(function (val, colIdx) {
           return val * sqrtS[colIdx];
         });
-      }); // We populate a row vector with a standard normal distribution
+      });
+
+      // We populate a row vector with a standard normal distribution
       // (mean 0, variance 1), and then multiply it with scaledV
+      var standardNormal = standardNormalVector(n, seedRandom);
 
-      var standardNormal = standardNormalVector(n, seedRandom); // compute the correlated dsitribution based on the covariance
+      // compute the correlated dsitribution based on the covariance
       // matrix
+      var variants = Numeric.dot(standardNormal, Numeric.transpose(scaledV));
 
-      var variants = _numeric["default"].dot(standardNormal, _numeric["default"].transpose(scaledV)); // add the mean
-
-
+      // add the mean
       return variants.map(function (variant, idx) {
         return variant + mean[idx];
       });
@@ -78,7 +70,7 @@ var Distribution = function Distribution(n, mean, cov, _ref, seed) {
       return mean;
     },
     setMean: function setMean(unvalidatedMean) {
-      var newMean = (0, _validation.validateMean)(unvalidatedMean, n);
+      var newMean = validateMean(unvalidatedMean, n);
       return Distribution(n, newMean, cov, {
         u: u,
         s: s,
@@ -89,146 +81,126 @@ var Distribution = function Distribution(n, mean, cov, _ref, seed) {
       return cov;
     },
     setCov: function setCov(unvalidatedCov) {
-      var _validateCovAndGetSVD = (0, _validation.validateCovAndGetSVD)(unvalidatedCov, n),
-          newCov = _validateCovAndGetSVD.cov,
-          newSVD = _validateCovAndGetSVD.svd;
-
+      var _validateCovAndGetSVD = validateCovAndGetSVD(unvalidatedCov, n),
+        newCov = _validateCovAndGetSVD.cov,
+        newSVD = _validateCovAndGetSVD.svd;
       return Distribution(n, mean, newCov, newSVD);
     }
   };
 };
-
-var _default = Distribution;
-exports["default"] = _default;
+module.exports = {
+  Distribution: Distribution
+};
 },{"./validation.js":3,"gaussian":5,"numeric":10,"seedrandom":11}],2:[function(require,module,exports){
 "use strict";
 
+var isArray = require("lodash.isarray");
+var _require = require("./validation.js"),
+  validateMean = _require.validateMean,
+  validateCovAndGetSVD = _require.validateCovAndGetSVD;
+var _require2 = require("./distribution.js"),
+  Distribution = _require2.Distribution;
+var MultivariateNormal = function MultivariateNormal(unvalidatedMean, unvalidatedCov, seed) {
+  if (!isArray(unvalidatedMean)) {
+    throw new Error("mean must be an array");
+  }
+  var n = unvalidatedMean.length;
+  var mean = validateMean(unvalidatedMean, n);
+  var _validateCovAndGetSVD = validateCovAndGetSVD(unvalidatedCov, n),
+    cov = _validateCovAndGetSVD.cov,
+    svd = _validateCovAndGetSVD.svd;
+  return Distribution(n, mean, cov, svd, seed);
+};
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports["default"] = void 0;
-
-var _lodash = _interopRequireDefault(require("lodash.isarray"));
-
-var _validation = require("./validation.js");
-
-var _distribution = _interopRequireDefault(require("./distribution.js"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var MultivariateNormal = function MultivariateNormal(unvalidatedMean, unvalidatedCov, seed) {
-  if (!(0, _lodash["default"])(unvalidatedMean)) {
-    throw new Error("mean must be an array");
-  }
-
-  var n = unvalidatedMean.length;
-  var mean = (0, _validation.validateMean)(unvalidatedMean, n);
-
-  var _validateCovAndGetSVD = (0, _validation.validateCovAndGetSVD)(unvalidatedCov, n),
-      cov = _validateCovAndGetSVD.cov,
-      svd = _validateCovAndGetSVD.svd;
-
-  return (0, _distribution["default"])(n, mean, cov, svd, seed);
+module.exports = {
+  MultivariateNormal: MultivariateNormal
 };
-
-var _default = MultivariateNormal;
-exports["default"] = _default;
 },{"./distribution.js":1,"./validation.js":3,"lodash.isarray":7}],3:[function(require,module,exports){
 "use strict";
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.validateCovAndGetSVD = exports.validateMean = void 0;
-
-var _lodash = _interopRequireDefault(require("lodash.isarray"));
-
-var _lodash2 = _interopRequireDefault(require("lodash.every"));
-
-var _lodash3 = _interopRequireDefault(require("lodash.isnumber"));
-
-var _lodash4 = _interopRequireDefault(require("lodash.some"));
-
-var _numeric = _interopRequireDefault(require("numeric"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+var isArray = require("lodash.isarray");
+var every = require("lodash.every");
+var isNumber = require("lodash.isnumber");
+var some = require("lodash.some");
+var Numeric = require("numeric");
 
 // freezes nested arrays
 var deepFreeze = function deepFreeze(ary) {
-  if ((0, _lodash["default"])(ary)) {
+  if (isArray(ary)) {
     ary.forEach(deepFreeze);
     Object.freeze(ary);
   }
-}; // validates a mean vector that's supposed to be of length n
+};
+
+// validates a mean vector that's supposed to be of length n
 //
 // on success, freezes mean and returns it
-
-
 var validateMean = function validateMean(mean, n) {
   // must be an array
-  if (!(0, _lodash["default"])(mean)) {
+  if (!isArray(mean)) {
     throw new Error("Mean must be an array");
-  } // must be an array of numbers
+  }
 
-
-  if (!(0, _lodash2["default"])(mean, _lodash3["default"])) {
+  // must be an array of numbers
+  if (!every(mean, isNumber)) {
     throw new Error("Mean must be an array of numbers");
-  } // must have the correct length
+  }
 
-
+  // must have the correct length
   if (mean.length !== n) {
     throw new Error("Expected mean to have length ".concat(n, ", but had length ").concat(mean.length));
   }
-
   Object.freeze(mean);
   return mean;
-}; // validates a covariance matrix that's supposed to be NxN. If successful,
+};
+
+// validates a covariance matrix that's supposed to be NxN. If successful,
 // computes the SVD, freezes cov, and returns {cov, svd: { u, s, v }}
-
-
-exports.validateMean = validateMean;
-
 var validateCovAndGetSVD = function validateCovAndGetSVD(cov, n) {
   // must be an array
-  if (!(0, _lodash["default"])(cov)) {
+  if (!isArray(cov)) {
     throw new Error("Covariance must be an array");
-  } // must have n elements
+  }
 
-
+  // must have n elements
   if (cov.length !== n) {
     throw new Error("Covariance matrix had ".concat(cov.length, " rows, but it should be a ").concat(n, "x").concat(n, " square matrix"));
-  } // validate each row
+  }
 
-
+  // validate each row
   cov.forEach(function (row, idx) {
     // must be an array
-    if (!(0, _lodash["default"])(row)) {
+    if (!isArray(row)) {
       throw new Error("Row ".concat(idx, " of covariance matrix was not an array"));
-    } // must have n elements
+    }
 
-
+    // must have n elements
     if (row.length !== n) {
       throw new Error("Row ".concat(idx, " of covariance matrix had length ").concat(row.length, ", but it should have length ").concat(n));
-    } // each element must be a number
+    }
 
-
-    if (!(0, _lodash2["default"])(row, _lodash3["default"])) {
+    // each element must be a number
+    if (!every(row, isNumber)) {
       throw new Error("Row ".concat(idx, " of covariance matrix contained a non-numeric value"));
     }
-  }); // matrix must be positive semidefinite
+  });
 
-  var eigenvalues = _numeric["default"].eig(cov).lambda.x;
-
-  if ((0, _lodash4["default"])(eigenvalues, function (v) {
+  // matrix must be positive semidefinite
+  var eigenvalues = Numeric.eig(cov).lambda.x;
+  if (some(eigenvalues, function (v) {
     return v < 0;
   })) {
     throw new Error("Covariance isn't positive semidefinite");
-  } // matrix must be symmetric
+  }
 
-
-  if (!_numeric["default"].same(_numeric["default"].transpose(cov), cov)) {
+  // matrix must be symmetric
+  if (!Numeric.same(Numeric.transpose(cov), cov)) {
     throw new Error("Covariance isn't symmetric");
-  } // do decomposition
+  }
+
+  // do decomposition
   // We use the SVD algorithm from Numeric.js because it's efficient and
   // reliable. Sylvester includes an SVD algorithm that doesn't hand some
   // edge cases and is also extremely slow (takes ~500ms to compute and SVD
@@ -237,14 +209,10 @@ var validateCovAndGetSVD = function validateCovAndGetSVD(cov, n) {
   // There's also node-svd, which is a wrapper around a C implementation.
   // It's slightly faster than Numeric (it can do a 370x370 matrix in ~500ms),
   // but can't run the browser and doesn't handle some edge cases well.
-
-
-  var _Numeric$svd = _numeric["default"].svd(cov),
-      u = _Numeric$svd.U,
-      s = _Numeric$svd.S,
-      v = _Numeric$svd.V; // deep freeze cov and svd
-
-
+  var _Numeric$svd = Numeric.svd(cov),
+    u = _Numeric$svd.U,
+    s = _Numeric$svd.S,
+    v = _Numeric$svd.V; // deep freeze cov and svd
   deepFreeze(cov);
   deepFreeze(u);
   deepFreeze(s);
@@ -258,8 +226,10 @@ var validateCovAndGetSVD = function validateCovAndGetSVD(cov, n) {
     }
   };
 };
-
-exports.validateCovAndGetSVD = validateCovAndGetSVD;
+module.exports = {
+  validateMean: validateMean,
+  validateCovAndGetSVD: validateCovAndGetSVD
+};
 },{"lodash.every":6,"lodash.isarray":7,"lodash.isnumber":8,"lodash.some":9,"numeric":10}],4:[function(require,module,exports){
 
 },{}],5:[function(require,module,exports){

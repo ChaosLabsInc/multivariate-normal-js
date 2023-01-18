@@ -1,10 +1,10 @@
-import isArray from "lodash.isarray";
-import every from "lodash.every";
-import isNumber from "lodash.isnumber";
-import some from "lodash.some";
+const isArray = require("lodash.isarray");
+const every = require("lodash.every");
+const isNumber = require("lodash.isnumber");
+const some = require("lodash.some");
 
 
-import Numeric from "numeric";
+const Numeric = require("numeric");
 
 // freezes nested arrays
 const deepFreeze = (ary) => {
@@ -104,4 +104,4 @@ const validateCovAndGetSVD = (cov, n) => {
 };
 
 
-export { validateMean, validateCovAndGetSVD };
+module.exports = { validateMean, validateCovAndGetSVD };

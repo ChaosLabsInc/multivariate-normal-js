@@ -1,7 +1,7 @@
 /* globals describe, it, expect */
 
-import MultivariateNormal from "multivariate-normal";
-import Numeric from "numeric";
+const {MultivariateNormal} = require("../src");
+const Numeric = require("numeric");
 
 describe("The MultivariateNormal function", () => {
 

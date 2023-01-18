@@ -1,10 +1,10 @@
 /* globals alert */
 /* eslint no-alert: 0 */
 
-import { drawChart2D, drawChart3D } from "./plot";
-import { generateData } from "./data";
-import { serializeForm } from "./util";
-import $ from "jquery";
+const { drawChart2D, drawChart3D } = require("./plot");
+const { generateData } = require("./data");
+const { serializeForm } = require("./util");
+const $ = require("jquery");
 
 const NUM_POINTS = 5000;
 
@@ -56,4 +56,4 @@ const Forms = {
     },
 };
 
-export default Forms;
+exports.default = Forms;

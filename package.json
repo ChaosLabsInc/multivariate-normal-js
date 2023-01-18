@@ -1,6 +1,6 @@
 {
-  "name": "multivariate-normal",
-  "version": "0.1.2",
+  "name": "@chaos-labs/multivariate-normal",
+  "version": "0.1.4",
   "description": "Port of NumPy's random.multivariate_normal to Node.JS",
   "main": "src/index.js",
   "scripts": {
@@ -32,6 +32,7 @@
     "@babel/core": "^7.5.5",
     "@babel/node": "^7.5.5",
     "@babel/preset-env": "^7.5.5",
+    "@types/jest": "^29.2.5",
     "babel-loader": "^8.0.6",
     "browserify": "^16.5.0",
     "dist-es6": "^0.1.17",
@@ -40,6 +41,7 @@
     "jquery": "^3.4.1",
     "json-loader": "^0.5.7",
     "terser": "^4.2.0",
+    "ts-jest": "^29.0.3",
     "webpack": "^4.39.2",
     "webpack-cli": "^3.3.7",
     "webpack-dev-server": "^3.8.0"

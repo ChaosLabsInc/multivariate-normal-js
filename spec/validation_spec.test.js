@@ -1,7 +1,7 @@
 /* globals describe, it, expect */
 
-import { validateMean, validateCovAndGetSVD } from "../src/validation";
-import { roundMatrix } from "./util";
+const { validateMean, validateCovAndGetSVD } = require("../src/validation");
+const { roundMatrix } = require("./util");
 
 describe("The validation function", () => {
 

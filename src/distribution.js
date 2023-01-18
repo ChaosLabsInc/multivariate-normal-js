@@ -1,7 +1,7 @@
-import { validateMean, validateCovAndGetSVD } from "./validation.js";
-import gaussian from "gaussian";
-import Numeric from "numeric";
-import seedrandom from "seedrandom";
+const { validateMean, validateCovAndGetSVD } = require("./validation.js");
+const gaussian = require("gaussian");
+const Numeric = require("numeric");
+const seedrandom = require("seedrandom");
 
 // Low-level distribution constructor. NOT a public API.
 //
@@ -81,4 +81,4 @@ const Distribution = (n, mean, cov, { u, s, v }, seed) => {
     };
 };
 
-export default Distribution;
+module.exports = {Distribution};
